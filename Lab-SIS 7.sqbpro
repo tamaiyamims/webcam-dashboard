@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?><sqlb_project><db path="SIS 7.db" readonly="0" foreign_keys="1" case_sensitive_like="0" temp_store="0" wal_autocheckpoint="1000" synchronous="2"/><attached/><window><main_tabs open="structure browser pragmas query" current="3"/></window><tab_structure><column_width id="0" width="300"/><column_width id="1" width="0"/><column_width id="2" width="100"/><column_width id="3" width="1698"/><column_width id="4" width="0"/><expanded_item id="0" parent="1"/><expanded_item id="1" parent="1"/><expanded_item id="2" parent="1"/><expanded_item id="3" parent="1"/></tab_structure><tab_browse><table title="Courses" custom_title="0" dock_id="1" table="4,7:mainCourses"/><dock_state state="000000ff00000000fd00000001000000020000015c000002b6fc0100000001fb000000160064006f0063006b00420072006f007700730065003101000000000000015c0000010100ffffff0000015c0000000000000004000000040000000800000008fc00000000"/><default_encoding codec=""/><browse_table_settings><table schema="main" name="Courses" show_row_id="0" encoding="" plot_x_axis="" unlock_view_pk="_rowid_" freeze_columns="0"><sort/><column_widths><column index="1" value="72"/><column index="2" value="96"/><column index="3" value="64"/><column index="4" value="74"/></column_widths><filter_values/><conditional_formats/><row_id_formats/><display_formats/><hidden_columns/><plot_y_axes/><global_filter/></table></browse_table_settings></tab_browse><tab_sql><sql name="SQL 1*">-- ==========================
+-- RESET TABLES
+-- ==========================
+DROP TABLE IF EXISTS Enrollments;
+DROP TABLE IF EXISTS Courses;
+DROP TABLE IF EXISTS Faculty;
+DROP TABLE IF EXISTS Students;
+DROP TABLE IF EXISTS enrollment_summary;
+
+-- ==========================
+-- TABLES
+-- ==========================
+
+CREATE TABLE Students (
+    student_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    major TEXT
+);
+
+CREATE TABLE Faculty (
+    faculty_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    first_name TEXT NOT NULL,
+    last_name TEXT NOT NULL,
+    email TEXT UNIQUE NOT NULL,
+    department TEXT
+);
+
+CREATE TABLE Courses (
+    course_id INTEGER PRIMARY KEY,
+    course_name TEXT NOT NULL,
+    capacity INTEGER NOT NULL,
+    faculty_id INTEGER NOT NULL,
+    FOREIGN KEY(faculty_id) REFERENCES Faculty(faculty_id)
+);
+
+CREATE TABLE Enrollments (
+    enrollment_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id INTEGER NOT NULL,
+    course_id INTEGER NOT NULL,
+    term TEXT NOT NULL,
+    grade TEXT,
+    FOREIGN KEY(student_id) REFERENCES Students(student_id),
+    FOREIGN KEY(course_id) REFERENCES Courses(course_id),
+    UNIQUE(student_id, course_id, term)
+);
+
+-- ==========================
+-- SAMPLE DATA
+-- ==========================
+
+INSERT INTO Students (first_name, last_name, email, major) VALUES
+('Alice', 'Johnson', 'alice.johnson@email.com', 'Computer Science'),
+('Bob', 'Smith', 'bob.smith@email.com', 'Mathematics'),
+('Carol', 'Lee', 'carol.lee@email.com', 'Physics'),
+('David', 'Kim', 'david.kim@email.com', 'Chemistry'),
+('Eva', 'Chen', 'eva.chen@email.com', 'Biology');
+
+INSERT INTO Faculty (first_name, last_name, email, department) VALUES
+('John', 'Doe', 'john.doe@university.com', 'Computer Science'),
+('Jane', 'Smith', 'jane.smith@university.com', 'Mathematics'),
+('Mike', 'Brown', 'mike.brown@university.com', 'Physics'),
+('Anna', 'Davis', 'anna.davis@university.com', 'Chemistry');
+
+INSERT INTO Courses (course_id, course_name, capacity, faculty_id) VALUES
+(101, 'Intro to CS', 3, 1),
+(102, 'Calculus I', 2, 2),
+(103, 'Physics I', 2, 3),
+(104, 'Chemistry I', 3, 4),
+(105, 'Data Structures', 2, 1);
+
+INSERT INTO Enrollments (student_id, course_id, term, grade) VALUES
+(1, 101, 'Spring 2026', 'A'),
+(2, 101, 'Spring 2026', 'B'),
+(3, 102, 'Spring 2026', 'A-'),
+(4, 103, 'Spring 2026', 'B+'),
+(1, 105, 'Spring 2026', NULL),
+(5, 104, 'Spring 2026', NULL),
+(2, 102, 'Spring 2026', NULL);
+
+-- ==========================
+-- SUMMARY TABLE
+-- ==========================
+
+CREATE TABLE IF NOT EXISTS enrollment_summary (
+    term TEXT,
+    department TEXT,
+    course TEXT,
+    total_students INTEGER,
+    avg_grade REAL,
+    pass_rate REAL
+);
+
+INSERT INTO enrollment_summary VALUES
+('Fall 2025', 'Math', 'Algebra', 120, 78.5, 0.86),
+('Fall 2025', 'CS', 'Intro Programming', 150, 82.1, 0.91),
+('Spring 2026', 'Math', 'Calculus', 100, 74.2, 0.80),
+('Spring 2026', 'CS', 'Data Structures', 130, 79.6, 0.88);
+
+-- ==========================
+-- QUERIES
+-- ==========================
+
+SELECT term, SUM(total_students) AS total_enrollment
+FROM enrollment_summary
+GROUP BY term;
+
+SELECT department, SUM(total_students) AS total_students
+FROM enrollment_summary
+GROUP BY department;
+
+SELECT course, AVG(avg_grade) AS avg_grade
+FROM enrollment_summary
+GROUP BY course;</sql><current_tab id="0"/></tab_sql></sqlb_project>
